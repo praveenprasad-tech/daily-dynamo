@@ -1,149 +1,234 @@
-let tasks = [];
-let currentFilter = 'all';
-let alarmCheckerInterval;
-
-function addTask() {
-  const input = document.getElementById('taskInput');
-  const deadline = document.getElementById('deadlineInput');
-  const text = input.value.trim();
-
-  if (text === '') { alert('Please enter a task!'); return; }
-  if (deadline.value === '') { alert('Please set a deadline!'); return; }
-
-  tasks.push({
-    id: Date.now(),
-    text: text,
-    deadline: deadline.value,
-    completed: false,
-    alarmFired: false
-  });
-
-  input.value = '';
-  deadline.value = '';
-  renderTasks();
-}
-
-function toggleTask(index) {
-  tasks[index].completed = !tasks[index].completed;
-  renderTasks();
-}
-
-function deleteTask(index) {
-  tasks.splice(index, 1);
-  renderTasks();
-}
-
-function filterTasks(filter) {
-  currentFilter = filter;
-  renderTasks();
-}
-
-function playAlarm() {
-  const ctx = new (window.AudioContext || window.webkitAudioContext)();
-  for (let i = 0; i < 3; i++) {
-    const oscillator = ctx.createOscillator();
-    const gainNode = ctx.createGain();
-    oscillator.connect(gainNode);
-    gainNode.connect(ctx.destination);
-    oscillator.type = 'sine';
-    oscillator.frequency.value = 880;
-    gainNode.gain.setValueAtTime(1, ctx.currentTime + i * 0.5);
-    gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.5 + 0.4);
-    oscillator.start(ctx.currentTime + i * 0.5);
-    oscillator.stop(ctx.currentTime + i * 0.5 + 0.4);
-  }
-}
-
-function checkAlarms() {
-  const now = new Date();
-  tasks.forEach((task, index) => {
-    if (task.completed || task.alarmFired) return;
-    const deadline = new Date(task.deadline);
-    const diff = deadline - now;
-    if (diff <= 0) {
-      task.alarmFired = true;
-      playAlarm();
-      showAlert(`⏰ DEADLINE REACHED!\n\n"${task.text}" is INCOMPLETE!\n\nPlease complete your task now!`);
-      renderTasks();
-    } else if (diff <= 5 * 60 * 1000 && !task.warnedFiveMin) {
-      task.warnedFiveMin = true;
-      showAlert(`⚠️ REMINDER!\n\n"${task.text}" deadline is in 5 minutes!\n\nHurry up and complete your task!`);
+// Task Manager Class
+class TaskManager {
+    constructor() {
+        this.tasks = this.loadTasks();
+        this.currentFilter = 'all';
+        this.init();
     }
-  });
+
+    init() {
+        this.setupEventListeners();
+        this.render();
+        this.checkDeadlines();
+        // Check deadlines every minute
+        setInterval(() => this.checkDeadlines(), 60000);
+    }
+
+    setupEventListeners() {
+        // Add task button click
+        document.getElementById('addBtn').addEventListener('click', () => this.addTask());
+
+        // Enter key to add task
+        document.getElementById('taskInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') this.addTask();
+        });
+
+        // Filter buttons
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                this.currentFilter = e.target.dataset.filter;
+                this.render();
+            });
+        });
+    }
+
+    addTask() {
+        const taskInput = document.getElementById('taskInput');
+        const deadlineInput = document.getElementById('deadlineInput');
+
+        // Validation: Check task input
+        if (!taskInput.value.trim()) {
+            alert('Please enter a task!');
+            taskInput.focus();
+            return;
+        }
+
+        // Validation: Check deadline input
+        if (!deadlineInput.value) {
+            alert('Please set a deadline!');
+            deadlineInput.focus();
+            return;
+        }
+
+        // Create task object
+        const task = {
+            id: Date.now(),
+            text: taskInput.value.trim(),
+            deadline: new Date(deadlineInput.value),
+            completed: false,
+            createdAt: new Date()
+        };
+
+        // Add to tasks array
+        this.tasks.push(task);
+        this.saveTasks();
+        this.render();
+
+        // Clear inputs and focus
+        taskInput.value = '';
+        deadlineInput.value = '';
+        taskInput.focus();
+    }
+
+    deleteTask(id) {
+        // Ask for confirmation before deleting
+        if (confirm('Are you sure you want to delete this task?')) {
+            this.tasks = this.tasks.filter(task => task.id !== id);
+            this.saveTasks();
+            this.render();
+        }
+    }
+
+    toggleTask(id) {
+        const task = this.tasks.find(t => t.id === id);
+        if (task) {
+            task.completed = !task.completed;
+            this.saveTasks();
+            this.render();
+        }
+    }
+
+    getFilteredTasks() {
+        switch (this.currentFilter) {
+            case 'active':
+                return this.tasks.filter(t => !t.completed);
+            case 'completed':
+                return this.tasks.filter(t => t.completed);
+            default:
+                return this.tasks;
+        }
+    }
+
+    formatDeadline(deadline) {
+        const now = new Date();
+        const diff = deadline - now;
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+        if (diff < 0) {
+            return '⏰ Overdue';
+        } else if (days === 0 && hours === 0 && minutes === 0) {
+            return '🔴 Due Now!';
+        } else if (days === 0 && hours === 0) {
+            return `⚠️ ${minutes}m left`;
+        } else if (days === 0) {
+            return `⚠️ ${hours}h ${minutes}m left`;
+        } else {
+            return `📅 ${days}d ${hours}h left`;
+        }
+    }
+
+    checkDeadlines() {
+        this.tasks.forEach(task => {
+            if (!task.completed && new Date() >= task.deadline) {
+                this.notifyDeadline(task);
+            }
+        });
+    }
+
+    notifyDeadline(task) {
+        // Browser notification (if permission granted)
+        if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification('Daily Dynamo - Task Deadline! ⏰', {
+                body: `Deadline reached: ${task.text}`,
+                icon: '⚡'
+            });
+        }
+
+        // Show popup alert
+        alert(`⏰ DEADLINE REACHED!\n\nTask: ${task.text}\n\nDon't forget to complete it!`);
+    }
+
+    render() {
+        const tasksList = document.getElementById('tasksList');
+        const emptyState = document.getElementById('emptyState');
+        const filteredTasks = this.getFilteredTasks();
+
+        // Clear current list
+        tasksList.innerHTML = '';
+
+        // Show empty state if no tasks
+        if (filteredTasks.length === 0) {
+            emptyState.classList.remove('hidden');
+            return;
+        } else {
+            emptyState.classList.add('hidden');
+        }
+
+        // Render each task
+        filteredTasks.forEach(task => {
+            const isOverdue = !task.completed && new Date() > task.deadline;
+            const li = document.createElement('li');
+            li.className = `task-item ${task.completed ? 'completed' : ''} ${isOverdue ? 'overdue' : ''}`;
+
+            li.innerHTML = `
+                <input 
+                    type="checkbox" 
+                    class="task-checkbox" 
+                    ${task.completed ? 'checked' : ''}
+                    onchange="taskManager.toggleTask(${task.id})"
+                >
+                <div class="task-content">
+                    <div class="task-text">${this.escapeHtml(task.text)}</div>
+                    <div class="task-deadline">${this.formatDeadline(task.deadline)}</div>
+                </div>
+                <button class="delete-btn" onclick="taskManager.deleteTask(${task.id})">Delete</button>
+            `;
+
+            tasksList.appendChild(li);
+        });
+    }
+
+    escapeHtml(text) {
+        // Prevent XSS attacks by escaping HTML characters
+        const map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        };
+        return text.replace(/[&<>"']/g, m => map[m]);
+    }
+
+    saveTasks() {
+        try {
+            localStorage.setItem('dailyDynamoTasks', JSON.stringify(this.tasks));
+        } catch (e) {
+            console.warn('Could not save to localStorage:', e);
+            alert('Warning: Could not save tasks. Your data may not persist after refresh.');
+        }
+    }
+
+    loadTasks() {
+        try {
+            const saved = localStorage.getItem('dailyDynamoTasks');
+            if (saved) {
+                const tasks = JSON.parse(saved);
+                // Convert deadline strings back to Date objects
+                return tasks.map(t => ({
+                    ...t,
+                    deadline: new Date(t.deadline),
+                    createdAt: new Date(t.createdAt)
+                }));
+            }
+        } catch (e) {
+            console.warn('Could not load from localStorage:', e);
+        }
+        return [];
+    }
 }
 
-function showAlert(message) {
-  const overlay = document.getElementById('alertOverlay');
-  const msg = document.getElementById('alertMessage');
-  msg.innerText = message;
-  overlay.style.display = 'flex';
-}
-
-function closeAlert() {
-  document.getElementById('alertOverlay').style.display = 'none';
-}
-
-function getDeadlineStatus(task) {
-  if (task.completed) return { label: '✅ Completed', cls: 'completed-status' };
-  const now = new Date();
-  const deadline = new Date(task.deadline);
-  const diff = deadline - now;
-  const hours = diff / (1000 * 60 * 60);
-  if (diff < 0) return { label: '❌ Incomplete — Deadline passed!', cls: 'overdue' };
-  if (hours <= 1) return { label: '🔴 Less than 1 hour left!', cls: 'soon' };
-  if (hours <= 24) return { label: '⚠️ Due within 24 hours!', cls: 'soon' };
-  return { label: '🟢 On track', cls: 'ok' };
-}
-
-function formatDeadline(deadlineStr) {
-  const d = new Date(deadlineStr);
-  return d.toLocaleString('en-IN', {
-    day: '2-digit', month: 'short', year: 'numeric',
-    hour: '2-digit', minute: '2-digit'
-  });
-}
-
-function renderTasks() {
-  const list = document.getElementById('taskList');
-  list.innerHTML = '';
-
-  let filtered = tasks;
-  if (currentFilter === 'active') filtered = tasks.filter(t => !t.completed);
-  else if (currentFilter === 'completed') filtered = tasks.filter(t => t.completed);
-
-  if (filtered.length === 0) {
-    list.innerHTML = '<p style="text-align:center;color:#aaa;margin-top:20px;">No tasks found!</p>';
-    return;
-  }
-
-  filtered.forEach((task, index) => {
-    const status = getDeadlineStatus(task);
-    const li = document.createElement('li');
-    li.className = task.completed ? 'completed' : '';
-    li.innerHTML = `
-      <div class="task-top">
-        <span class="task-name">${task.text}</span>
-        <div>
-          <button class="btn-done" onclick="toggleTask(${index})">
-            ${task.completed ? 'Undo' : 'Mark Done'}
-          </button>
-          <button class="btn-delete" onclick="deleteTask(${index})">Delete</button>
-        </div>
-      </div>
-      <div class="deadline ${status.cls}">
-        🕐 Deadline: ${formatDeadline(task.deadline)}
-      </div>
-      <div class="status-label ${status.cls}">
-        ${status.label}
-      </div>
-    `;
-    list.appendChild(li);
-  });
-}
-
-document.getElementById('taskInput').addEventListener('keypress', function(e) {
-  if (e.key === 'Enter') addTask();
+// Initialize Task Manager when DOM is ready
+let taskManager;
+document.addEventListener('DOMContentLoaded', () => {
+    taskManager = new TaskManager();
 });
 
-alarmCheckerInterval = setInterval(checkAlarms, 10000);
-setInterval(renderTasks, 30000);
+// Request notification permission when page loads
+if ('Notification' in window && Notification.permission === 'default') {
+    Notification.requestPermission();
+}

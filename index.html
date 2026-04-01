@@ -1,36 +1,601 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Daily Dynamo</title>
-  <link rel="stylesheet" href="style.css" />
+  <title>Daily Dynamo - Smart To-Do List</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d0d14;
+      --surface: #15151f;
+      --surface2: #1e1e2e;
+      --border: rgba(255,255,255,0.08);
+      --text: #f0eeff;
+      --text-muted: #7b7a99;
+      --accent: #7c6af7;
+      --accent2: #f06292;
+      --accent3: #43e97b;
+      --high: #ff5f5f;
+      --medium: #ffb347;
+      --low: #43e97b;
+      --card-shadow: 0 8px 32px rgba(0,0,0,0.4);
+      --radius: 16px;
+      --transition: 0.25s cubic-bezier(.4,0,.2,1);
+    }
+
+    [data-theme="light"] {
+      --bg: #f0eeff;
+      --surface: #ffffff;
+      --surface2: #eae8ff;
+      --border: rgba(0,0,0,0.08);
+      --text: #1a1a2e;
+      --text-muted: #7b7a99;
+      --card-shadow: 0 8px 32px rgba(124,106,247,0.12);
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      transition: background var(--transition), color var(--transition);
+      background-image: radial-gradient(ellipse at 20% 20%, rgba(124,106,247,0.12) 0%, transparent 60%),
+                        radial-gradient(ellipse at 80% 80%, rgba(240,98,146,0.08) 0%, transparent 60%);
+    }
+
+    /* HEADER */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 24px 32px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 1.6rem;
+      letter-spacing: -0.5px;
+    }
+    .logo span { color: var(--accent); }
+    .logo-icon { font-size: 1.5rem; }
+
+    .theme-btn {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 50px;
+      padding: 8px 18px;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all var(--transition);
+    }
+    .theme-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    /* STATS DASHBOARD */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      max-width: 900px;
+      margin: 0 auto 28px;
+      padding: 0 32px;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      box-shadow: var(--card-shadow);
+      transition: transform var(--transition), box-shadow var(--transition);
+    }
+    .stat-card:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0,0,0,0.5); }
+
+    .stat-label {
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 6px;
+    }
+    .stat-value {
+      font-family: 'Syne', sans-serif;
+      font-size: 2rem;
+      font-weight: 700;
+      line-height: 1;
+    }
+    .stat-card:nth-child(1) .stat-value { color: var(--accent); }
+    .stat-card:nth-child(2) .stat-value { color: var(--accent3); }
+    .stat-card:nth-child(3) .stat-value { color: var(--high); }
+    .stat-card:nth-child(4) .stat-value { color: var(--medium); }
+
+    /* PROGRESS BAR */
+    .progress-wrap {
+      max-width: 900px;
+      margin: 0 auto 28px;
+      padding: 0 32px;
+    }
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+    .progress-bar-bg {
+      background: var(--surface2);
+      border-radius: 99px;
+      height: 10px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      border-radius: 99px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      transition: width 0.5s cubic-bezier(.4,0,.2,1);
+      width: 0%;
+    }
+
+    /* MAIN CARD */
+    .main-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      box-shadow: var(--card-shadow);
+      max-width: 900px;
+      margin: 0 auto 32px;
+      padding: 28px;
+      margin-left: 32px;
+      margin-right: 32px;
+    }
+
+    /* ADD TASK FORM */
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr auto auto auto;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .form-row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    input, select {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.92rem;
+      outline: none;
+      transition: border-color var(--transition), box-shadow var(--transition);
+      width: 100%;
+    }
+    input::placeholder { color: var(--text-muted); }
+    input:focus, select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(124,106,247,0.15);
+    }
+    select option { background: var(--surface2); }
+
+    .add-btn {
+      background: linear-gradient(135deg, var(--accent), #a78bfa);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      padding: 12px 24px;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all var(--transition);
+      letter-spacing: 0.02em;
+    }
+    .add-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(124,106,247,0.4); }
+    .add-btn:active { transform: translateY(0); }
+
+    /* FILTERS */
+    .filters {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .filter-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      border-radius: 99px;
+      padding: 7px 18px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all var(--transition);
+    }
+    .filter-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .filter-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    /* TASK LIST */
+    .task-list { display: flex; flex-direction: column; gap: 10px; min-height: 80px; }
+
+    .task-item {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px 18px;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      transition: all var(--transition);
+      animation: slideIn 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .task-item::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 4px;
+      border-radius: 4px 0 0 4px;
+    }
+    .task-item.priority-high::before { background: var(--high); }
+    .task-item.priority-medium::before { background: var(--medium); }
+    .task-item.priority-low::before { background: var(--low); }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .task-item:hover { border-color: rgba(124,106,247,0.3); transform: translateX(4px); }
+    .task-item.done { opacity: 0.55; }
+    .task-item.done .task-title { text-decoration: line-through; color: var(--text-muted); }
+
+    .task-check {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      background: transparent;
+      cursor: pointer;
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      transition: all var(--transition);
+      margin-top: 2px;
+    }
+    .task-check:hover { border-color: var(--accent3); }
+    .task-item.done .task-check {
+      background: var(--accent3);
+      border-color: var(--accent3);
+    }
+    .task-check::after {
+      content: '✓';
+      color: #fff;
+      font-size: 0.75rem;
+      font-weight: 700;
+      opacity: 0;
+      transition: opacity var(--transition);
+    }
+    .task-item.done .task-check::after { opacity: 1; }
+
+    .task-body { flex: 1; min-width: 0; }
+    .task-title {
+      font-weight: 500;
+      font-size: 0.95rem;
+      margin-bottom: 6px;
+      transition: color var(--transition);
+    }
+
+    .task-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 99px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .badge-high { background: rgba(255,95,95,0.15); color: var(--high); }
+    .badge-medium { background: rgba(255,179,71,0.15); color: var(--medium); }
+    .badge-low { background: rgba(67,233,123,0.15); color: var(--low); }
+    .badge-cat {
+      background: rgba(124,106,247,0.15);
+      color: var(--accent);
+    }
+
+    .task-deadline {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .task-deadline.overdue { color: var(--high); }
+
+    .task-actions { display: flex; gap: 6px; flex-shrink: 0; }
+    .task-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      border-radius: 8px;
+      width: 32px; height: 32px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.85rem;
+      transition: all var(--transition);
+    }
+    .task-btn:hover { background: rgba(255,95,95,0.1); border-color: var(--high); color: var(--high); }
+
+    /* EMPTY STATE */
+    .empty-state {
+      text-align: center;
+      padding: 48px 20px;
+      color: var(--text-muted);
+    }
+    .empty-state .emoji { font-size: 2.5rem; margin-bottom: 12px; }
+    .empty-state p { font-size: 0.95rem; }
+
+    /* FOOTER */
+    footer {
+      text-align: center;
+      padding: 20px;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 640px) {
+      header, .stats-grid, .progress-wrap { padding: 0 16px; }
+      .main-card { margin: 0 16px 24px; padding: 20px 16px; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .form-row { grid-template-columns: 1fr; }
+      .form-row-2 { grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
 <body>
 
-  <!-- Alert Popup -->
-  <div id="alertOverlay">
-    <div id="alertBox">
-      <div id="alertMessage"></div>
-      <button onclick="closeAlert()">OK, Got it!</button>
+  <header>
+    <div class="logo">
+      <span class="logo-icon">⚡</span>
+      Daily <span>Dynamo</span>
+    </div>
+    <button class="theme-btn" onclick="toggleTheme()">
+      <span id="theme-icon">☀️</span>
+      <span id="theme-label">Light Mode</span>
+    </button>
+  </header>
+
+  <!-- STATS DASHBOARD -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-label">Total Tasks</div>
+      <div class="stat-value" id="stat-total">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Completed</div>
+      <div class="stat-value" id="stat-done">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">High Priority</div>
+      <div class="stat-value" id="stat-high">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Overdue</div>
+      <div class="stat-value" id="stat-overdue">0</div>
     </div>
   </div>
 
-  <div class="container">
-    <h1>✅ Daily Dynamo</h1>
-    <div class="input-box">
-      <input type="text" id="taskInput" placeholder="Add a new task..." />
-      <input type="datetime-local" id="deadlineInput" />
-      <button onclick="addTask()">Add Task</button>
+  <!-- PROGRESS BAR -->
+  <div class="progress-wrap">
+    <div class="progress-header">
+      <span>Daily Progress</span>
+      <span id="progress-pct">0% complete</span>
     </div>
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="progress-fill"></div>
+    </div>
+  </div>
+
+  <!-- MAIN CARD -->
+  <div class="main-card">
+
+    <!-- FORM ROW 1 -->
+    <div class="form-row">
+      <input type="text" id="task-input" placeholder="Add a new task..." />
+      <input type="datetime-local" id="deadline-input" />
+      <button class="add-btn" onclick="addTask()">+ Add Task</button>
+    </div>
+
+    <!-- FORM ROW 2 -->
+    <div class="form-row-2">
+      <select id="priority-input">
+        <option value="medium">⚡ Medium Priority</option>
+        <option value="high">🔴 High Priority</option>
+        <option value="low">🟢 Low Priority</option>
+      </select>
+      <select id="category-input">
+        <option value="General">📁 General</option>
+        <option value="Work">💼 Work</option>
+        <option value="Personal">🏠 Personal</option>
+        <option value="Health">❤️ Health</option>
+        <option value="Learning">📚 Learning</option>
+        <option value="Finance">💰 Finance</option>
+      </select>
+    </div>
+
+    <!-- FILTERS -->
     <div class="filters">
-      <button onclick="filterTasks('all')">All</button>
-      <button onclick="filterTasks('active')">Active</button>
-      <button onclick="filterTasks('completed')">Completed</button>
+      <button class="filter-btn active" onclick="setFilter('all', this)">All</button>
+      <button class="filter-btn" onclick="setFilter('active', this)">Active</button>
+      <button class="filter-btn" onclick="setFilter('completed', this)">Completed</button>
+      <button class="filter-btn" onclick="setFilter('high', this)">🔴 High</button>
+      <button class="filter-btn" onclick="setFilter('medium', this)">⚡ Medium</button>
+      <button class="filter-btn" onclick="setFilter('low', this)">🟢 Low</button>
     </div>
-    <ul id="taskList"></ul>
+
+    <!-- TASK LIST -->
+    <div class="task-list" id="task-list"></div>
+
   </div>
 
-  <script src="script.js"></script>
+  <footer>© 2024 Daily Dynamo — Keep your tasks organized ⚡</footer>
+
+<script>
+  let tasks = JSON.parse(localStorage.getItem('dd-tasks') || '[]');
+  let currentFilter = 'all';
+
+  function saveTasks() {
+    localStorage.setItem('dd-tasks', JSON.stringify(tasks));
+  }
+
+  function addTask() {
+    const title = document.getElementById('task-input').value.trim();
+    if (!title) { document.getElementById('task-input').focus(); return; }
+
+    const task = {
+      id: Date.now(),
+      title,
+      deadline: document.getElementById('deadline-input').value,
+      priority: document.getElementById('priority-input').value,
+      category: document.getElementById('category-input').value,
+      done: false,
+      created: new Date().toISOString()
+    };
+
+    tasks.unshift(task);
+    saveTasks();
+    document.getElementById('task-input').value = '';
+    document.getElementById('deadline-input').value = '';
+    render();
+  }
+
+  function toggleTask(id) {
+    const t = tasks.find(t => t.id === id);
+    if (t) { t.done = !t.done; saveTasks(); render(); }
+  }
+
+  function deleteTask(id) {
+    tasks = tasks.filter(t => t.id !== id);
+    saveTasks();
+    render();
+  }
+
+  function setFilter(f, btn) {
+    currentFilter = f;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    render();
+  }
+
+  function toggleTheme() {
+    const html = document.documentElement;
+    const isDark = html.getAttribute('data-theme') === 'dark';
+    html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+    document.getElementById('theme-icon').textContent = isDark ? '🌙' : '☀️';
+    document.getElementById('theme-label').textContent = isDark ? 'Dark Mode' : 'Light Mode';
+  }
+
+  function isOverdue(deadline) {
+    if (!deadline) return false;
+    return new Date(deadline) < new Date() ;
+  }
+
+  function formatDeadline(deadline) {
+    if (!deadline) return '';
+    const d = new Date(deadline);
+    return d.toLocaleString('en-IN', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' });
+  }
+
+  function render() {
+    let filtered = tasks;
+    if (currentFilter === 'active') filtered = tasks.filter(t => !t.done);
+    else if (currentFilter === 'completed') filtered = tasks.filter(t => t.done);
+    else if (currentFilter === 'high') filtered = tasks.filter(t => t.priority === 'high');
+    else if (currentFilter === 'medium') filtered = tasks.filter(t => t.priority === 'medium');
+    else if (currentFilter === 'low') filtered = tasks.filter(t => t.priority === 'low');
+
+    const list = document.getElementById('task-list');
+
+    if (filtered.length === 0) {
+      list.innerHTML = `<div class="empty-state"><div class="emoji">🎯</div><p>No tasks here. Add one to get started!</p></div>`;
+    } else {
+      list.innerHTML = filtered.map(t => {
+        const overdue = isOverdue(t.deadline) && !t.done;
+        return `
+          <div class="task-item priority-${t.priority} ${t.done ? 'done' : ''}">
+            <div class="task-check" onclick="toggleTask(${t.id})"></div>
+            <div class="task-body">
+              <div class="task-title">${t.title}</div>
+              <div class="task-meta">
+                <span class="badge badge-${t.priority}">${t.priority}</span>
+                <span class="badge badge-cat">${t.category}</span>
+                ${t.deadline ? `<span class="task-deadline ${overdue ? 'overdue' : ''}">
+                  ${overdue ? '⚠️' : '🕐'} ${formatDeadline(t.deadline)}
+                </span>` : ''}
+              </div>
+            </div>
+            <div class="task-actions">
+              <button class="task-btn" onclick="deleteTask(${t.id})" title="Delete">🗑</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Update stats
+    const total = tasks.length;
+    const done = tasks.filter(t => t.done).length;
+    const high = tasks.filter(t => t.priority === 'high' && !t.done).length;
+    const overdue = tasks.filter(t => isOverdue(t.deadline) && !t.done).length;
+    const pct = total ? Math.round((done / total) * 100) : 0;
+
+    document.getElementById('stat-total').textContent = total;
+    document.getElementById('stat-done').textContent = done;
+    document.getElementById('stat-high').textContent = high;
+    document.getElementById('stat-overdue').textContent = overdue;
+    document.getElementById('progress-fill').style.width = pct + '%';
+    document.getElementById('progress-pct').textContent = pct + '% complete';
+  }
+
+  // Enter key support
+  document.getElementById('task-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') addTask();
+  });
+
+  render();
+</script>
 </body>
 </html>
