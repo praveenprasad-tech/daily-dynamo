@@ -7,7 +7,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
+ 
     :root {
       --bg: #0d0d14;
       --surface: #15151f;
@@ -25,7 +25,7 @@
       --radius: 16px;
       --transition: 0.25s cubic-bezier(.4,0,.2,1);
     }
-
+ 
     [data-theme="light"] {
       --bg: #f0eeff;
       --surface: #ffffff;
@@ -35,7 +35,7 @@
       --text-muted: #7b7a99;
       --card-shadow: 0 8px 32px rgba(124,106,247,0.12);
     }
-
+ 
     body {
       font-family: 'DM Sans', sans-serif;
       background: var(--bg);
@@ -45,8 +45,7 @@
       background-image: radial-gradient(ellipse at 20% 20%, rgba(124,106,247,0.12) 0%, transparent 60%),
                         radial-gradient(ellipse at 80% 80%, rgba(240,98,146,0.08) 0%, transparent 60%);
     }
-
-    /* HEADER */
+ 
     header {
       display: flex;
       align-items: center;
@@ -55,7 +54,7 @@
       max-width: 900px;
       margin: 0 auto;
     }
-
+ 
     .logo {
       display: flex;
       align-items: center;
@@ -67,7 +66,7 @@
     }
     .logo span { color: var(--accent); }
     .logo-icon { font-size: 1.5rem; }
-
+ 
     .theme-btn {
       background: var(--surface2);
       border: 1px solid var(--border);
@@ -84,8 +83,7 @@
       transition: all var(--transition);
     }
     .theme-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
-
-    /* STATS DASHBOARD */
+ 
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -94,7 +92,7 @@
       margin: 0 auto 28px;
       padding: 0 32px;
     }
-
+ 
     .stat-card {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -104,7 +102,7 @@
       transition: transform var(--transition), box-shadow var(--transition);
     }
     .stat-card:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0,0,0,0.5); }
-
+ 
     .stat-label {
       font-size: 0.75rem;
       font-weight: 500;
@@ -123,8 +121,7 @@
     .stat-card:nth-child(2) .stat-value { color: var(--accent3); }
     .stat-card:nth-child(3) .stat-value { color: var(--high); }
     .stat-card:nth-child(4) .stat-value { color: var(--medium); }
-
-    /* PROGRESS BAR */
+ 
     .progress-wrap {
       max-width: 900px;
       margin: 0 auto 28px;
@@ -151,8 +148,7 @@
       transition: width 0.5s cubic-bezier(.4,0,.2,1);
       width: 0%;
     }
-
-    /* MAIN CARD */
+ 
     .main-card {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -164,22 +160,21 @@
       margin-left: 32px;
       margin-right: 32px;
     }
-
-    /* ADD TASK FORM */
+ 
     .form-row {
       display: grid;
       grid-template-columns: 1fr auto auto auto;
       gap: 10px;
       margin-bottom: 18px;
     }
-
+ 
     .form-row-2 {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 10px;
       margin-bottom: 20px;
     }
-
+ 
     input, select {
       background: var(--surface2);
       border: 1px solid var(--border);
@@ -198,7 +193,7 @@
       box-shadow: 0 0 0 3px rgba(124,106,247,0.15);
     }
     select option { background: var(--surface2); }
-
+ 
     .add-btn {
       background: linear-gradient(135deg, var(--accent), #a78bfa);
       color: #fff;
@@ -215,8 +210,7 @@
     }
     .add-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(124,106,247,0.4); }
     .add-btn:active { transform: translateY(0); }
-
-    /* FILTERS */
+ 
     .filters {
       display: flex;
       gap: 8px;
@@ -241,10 +235,9 @@
       border-color: var(--accent);
       color: #fff;
     }
-
-    /* TASK LIST */
+ 
     .task-list { display: flex; flex-direction: column; gap: 10px; min-height: 80px; }
-
+ 
     .task-item {
       background: var(--surface2);
       border: 1px solid var(--border);
@@ -268,16 +261,16 @@
     .task-item.priority-high::before { background: var(--high); }
     .task-item.priority-medium::before { background: var(--medium); }
     .task-item.priority-low::before { background: var(--low); }
-
+ 
     @keyframes slideIn {
       from { opacity: 0; transform: translateY(-10px); }
       to { opacity: 1; transform: translateY(0); }
     }
-
+ 
     .task-item:hover { border-color: rgba(124,106,247,0.3); transform: translateX(4px); }
     .task-item.done { opacity: 0.55; }
     .task-item.done .task-title { text-decoration: line-through; color: var(--text-muted); }
-
+ 
     .task-check {
       width: 22px; height: 22px;
       border-radius: 50%;
@@ -303,7 +296,7 @@
       transition: opacity var(--transition);
     }
     .task-item.done .task-check::after { opacity: 1; }
-
+ 
     .task-body { flex: 1; min-width: 0; }
     .task-title {
       font-weight: 500;
@@ -311,14 +304,14 @@
       margin-bottom: 6px;
       transition: color var(--transition);
     }
-
+ 
     .task-meta {
       display: flex;
       align-items: center;
       gap: 8px;
       flex-wrap: wrap;
     }
-
+ 
     .badge {
       font-size: 0.72rem;
       font-weight: 600;
@@ -330,11 +323,8 @@
     .badge-high { background: rgba(255,95,95,0.15); color: var(--high); }
     .badge-medium { background: rgba(255,179,71,0.15); color: var(--medium); }
     .badge-low { background: rgba(67,233,123,0.15); color: var(--low); }
-    .badge-cat {
-      background: rgba(124,106,247,0.15);
-      color: var(--accent);
-    }
-
+    .badge-cat { background: rgba(124,106,247,0.15); color: var(--accent); }
+ 
     .task-deadline {
       font-size: 0.78rem;
       color: var(--text-muted);
@@ -343,7 +333,7 @@
       gap: 4px;
     }
     .task-deadline.overdue { color: var(--high); }
-
+ 
     .task-actions { display: flex; gap: 6px; flex-shrink: 0; }
     .task-btn {
       background: transparent;
@@ -357,8 +347,7 @@
       transition: all var(--transition);
     }
     .task-btn:hover { background: rgba(255,95,95,0.1); border-color: var(--high); color: var(--high); }
-
-    /* EMPTY STATE */
+ 
     .empty-state {
       text-align: center;
       padding: 48px 20px;
@@ -366,16 +355,14 @@
     }
     .empty-state .emoji { font-size: 2.5rem; margin-bottom: 12px; }
     .empty-state p { font-size: 0.95rem; }
-
-    /* FOOTER */
+ 
     footer {
       text-align: center;
       padding: 20px;
       color: var(--text-muted);
       font-size: 0.8rem;
     }
-
-    /* RESPONSIVE */
+ 
     @media (max-width: 640px) {
       header, .stats-grid, .progress-wrap { padding: 0 16px; }
       .main-card { margin: 0 16px 24px; padding: 20px 16px; }
@@ -386,7 +373,7 @@
   </style>
 </head>
 <body>
-
+ 
   <header>
     <div class="logo">
       <span class="logo-icon">⚡</span>
@@ -397,8 +384,7 @@
       <span id="theme-label">Light Mode</span>
     </button>
   </header>
-
-  <!-- STATS DASHBOARD -->
+ 
   <div class="stats-grid">
     <div class="stat-card">
       <div class="stat-label">Total Tasks</div>
@@ -417,8 +403,7 @@
       <div class="stat-value" id="stat-overdue">0</div>
     </div>
   </div>
-
-  <!-- PROGRESS BAR -->
+ 
   <div class="progress-wrap">
     <div class="progress-header">
       <span>Daily Progress</span>
@@ -428,18 +413,16 @@
       <div class="progress-bar-fill" id="progress-fill"></div>
     </div>
   </div>
-
-  <!-- MAIN CARD -->
+ 
   <div class="main-card">
-
-    <!-- FORM ROW 1 -->
+ 
     <div class="form-row">
       <input type="text" id="task-input" placeholder="Add a new task..." />
+      <!-- FIX 1: min and max set by JS to prevent wrong years -->
       <input type="datetime-local" id="deadline-input" />
       <button class="add-btn" onclick="addTask()">+ Add Task</button>
     </div>
-
-    <!-- FORM ROW 2 -->
+ 
     <div class="form-row-2">
       <select id="priority-input">
         <option value="medium">⚡ Medium Priority</option>
@@ -455,8 +438,7 @@
         <option value="Finance">💰 Finance</option>
       </select>
     </div>
-
-    <!-- FILTERS -->
+ 
     <div class="filters">
       <button class="filter-btn active" onclick="setFilter('all', this)">All</button>
       <button class="filter-btn" onclick="setFilter('active', this)">Active</button>
@@ -465,61 +447,84 @@
       <button class="filter-btn" onclick="setFilter('medium', this)">⚡ Medium</button>
       <button class="filter-btn" onclick="setFilter('low', this)">🟢 Low</button>
     </div>
-
-    <!-- TASK LIST -->
+ 
     <div class="task-list" id="task-list"></div>
-
+ 
   </div>
-
+ 
   <footer>© 2024 Daily Dynamo — Keep your tasks organized ⚡</footer>
-
+ 
 <script>
   let tasks = JSON.parse(localStorage.getItem('dd-tasks') || '[]');
   let currentFilter = 'all';
-
+ 
+  // ✅ FIX 1: Set min (today) and max (5 years from now) to prevent wrong years
+  function setDateLimits() {
+    const now = new Date();
+    const min = now.toISOString().slice(0, 16); // e.g. 2026-04-03T10:30
+    const maxDate = new Date(now.getFullYear() + 5, now.getMonth(), now.getDate());
+    const max = maxDate.toISOString().slice(0, 16);
+    const input = document.getElementById('deadline-input');
+    input.min = min;
+    input.max = max;
+  }
+  setDateLimits();
+ 
   function saveTasks() {
     localStorage.setItem('dd-tasks', JSON.stringify(tasks));
   }
-
+ 
   function addTask() {
     const title = document.getElementById('task-input').value.trim();
     if (!title) { document.getElementById('task-input').focus(); return; }
-
+ 
+    const deadlineVal = document.getElementById('deadline-input').value;
+ 
+    // ✅ FIX 1 extra: Validate year is reasonable
+    if (deadlineVal) {
+      const year = new Date(deadlineVal).getFullYear();
+      const currentYear = new Date().getFullYear();
+      if (year < currentYear || year > currentYear + 5) {
+        alert(`⚠️ Please enter a valid year between ${currentYear} and ${currentYear + 5}`);
+        return;
+      }
+    }
+ 
     const task = {
       id: Date.now(),
       title,
-      deadline: document.getElementById('deadline-input').value,
+      deadline: deadlineVal,
       priority: document.getElementById('priority-input').value,
       category: document.getElementById('category-input').value,
       done: false,
       created: new Date().toISOString()
     };
-
+ 
     tasks.unshift(task);
     saveTasks();
     document.getElementById('task-input').value = '';
     document.getElementById('deadline-input').value = '';
     render();
   }
-
+ 
   function toggleTask(id) {
     const t = tasks.find(t => t.id === id);
     if (t) { t.done = !t.done; saveTasks(); render(); }
   }
-
+ 
   function deleteTask(id) {
     tasks = tasks.filter(t => t.id !== id);
     saveTasks();
     render();
   }
-
+ 
   function setFilter(f, btn) {
     currentFilter = f;
     document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     render();
   }
-
+ 
   function toggleTheme() {
     const html = document.documentElement;
     const isDark = html.getAttribute('data-theme') === 'dark';
@@ -527,18 +532,25 @@
     document.getElementById('theme-icon').textContent = isDark ? '🌙' : '☀️';
     document.getElementById('theme-label').textContent = isDark ? 'Dark Mode' : 'Light Mode';
   }
-
+ 
   function isOverdue(deadline) {
     if (!deadline) return false;
-    return new Date(deadline) < new Date() ;
+    return new Date(deadline) < new Date();
   }
-
+ 
+  // ✅ FIX 2: AM/PM format using hour12: true
   function formatDeadline(deadline) {
     if (!deadline) return '';
     const d = new Date(deadline);
-    return d.toLocaleString('en-IN', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' });
+    return d.toLocaleString('en-US', {
+      day: '2-digit',
+      month: 'short',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true   // ← Shows 2:30 PM instead of 14:30
+    });
   }
-
+ 
   function render() {
     let filtered = tasks;
     if (currentFilter === 'active') filtered = tasks.filter(t => !t.done);
@@ -546,9 +558,9 @@
     else if (currentFilter === 'high') filtered = tasks.filter(t => t.priority === 'high');
     else if (currentFilter === 'medium') filtered = tasks.filter(t => t.priority === 'medium');
     else if (currentFilter === 'low') filtered = tasks.filter(t => t.priority === 'low');
-
+ 
     const list = document.getElementById('task-list');
-
+ 
     if (filtered.length === 0) {
       list.innerHTML = `<div class="empty-state"><div class="emoji">🎯</div><p>No tasks here. Add one to get started!</p></div>`;
     } else {
@@ -574,14 +586,13 @@
         `;
       }).join('');
     }
-
-    // Update stats
+ 
     const total = tasks.length;
     const done = tasks.filter(t => t.done).length;
     const high = tasks.filter(t => t.priority === 'high' && !t.done).length;
     const overdue = tasks.filter(t => isOverdue(t.deadline) && !t.done).length;
     const pct = total ? Math.round((done / total) * 100) : 0;
-
+ 
     document.getElementById('stat-total').textContent = total;
     document.getElementById('stat-done').textContent = done;
     document.getElementById('stat-high').textContent = high;
@@ -589,12 +600,11 @@
     document.getElementById('progress-fill').style.width = pct + '%';
     document.getElementById('progress-pct').textContent = pct + '% complete';
   }
-
-  // Enter key support
+ 
   document.getElementById('task-input').addEventListener('keydown', e => {
     if (e.key === 'Enter') addTask();
   });
-
+ 
   render();
 </script>
 </body>
